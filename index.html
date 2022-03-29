@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>PLSQL 5 - Excepții</title>
+      <link rel="icon" href="assets/icon.png" />
+      <link rel="stylesheet" href="style.css" />
+      <script src="script.js" defer></script>
+   </head>
+   <body>
+      <header>
+         <h1>PLSQL 5 - Excepții</h1>
+      </header>
+      <main>
+         <section>
+            <h2>Ce este o excepție ?</h2>
+            <p>
+               O excepție este o eroare ce apare in timpul execuției unui program.
+               Implicit excepțiile sunt predefinite intern de catre enviroment, dar pot fi definite și de catre programator.
+            </p>
+         </section>
+         <section>
+            <h2>Excepții predefinite</h2>
+            <ul>
+               <li>
+                  NO_DATA_FOUND: apare atunci cand un SELECT INTO nu returneaza nici o linie 
+                  (excepție fac funcțiile de agregare, acestea returneaza mereu o valoare sau null)
+               </li>
+               <li>
+                  TOO_MANY_ROWS: apare atunci cand un SELECT INTO returneaza mai multe linii
+               </li>
+               <li>
+                  CURSOR_ALREADY_OPEN: apare atunci cand se incearca deschiderea unui cursor deja deshis
+               </li>
+               <li>
+                  INVALID_CURSOR: apare atunci cand se incearca o operatie ilegala asupra unui cursor 
+                  (ex: incercarea de inchide un cursor care nu a fost deschis)
+               </li>
+               <li>
+                  ZERO_DIVIDE: apare atunci cand se incearca imaprtirea la zero
+               </li>
+               <li>
+                  ACCESS_INTO_NULL: Your program attempts to assign values to the attributes of an uninitialized (atomically null) object.
+               </li>
+               <li>
+                  CASE_NOT_FOUND:
+                  None of the choices in the WHEN clauses of a CASE statement is selected, and there is no ELSE clause.
+               </li>
+               <li>    
+                  COLLECTION_IS_NULL:
+                  Your program attempts to apply collection methods other than EXISTS to an uninitialized (atomically null) nested table or varray, or the program attempts to assign values to the elements of an uninitialized nested table or varray.
+               </li>
+         
+               <li>
+                  DUP_VAL_ON_INDEX:
+                  Your program attempts to store duplicate values in a database column that is constrained by a unique index.
+               </li>
+              
+               <li>
+                  INVALID_NUMBER:
+                  In a SQL statement, the conversion of a character string into a number fails because the string does not represent a valid number. (In procedural statements, VALUE_ERROR is raised.) This exception is also raised when the LIMIT-clause expression in a bulk FETCH statement does not evaluate to a positive number.
+               </li>
+               <li>LOGIN_DENIED:
+                  Your program attempts to log on to Oracle with an invalid username and/or password.
+               </li>
+      
+               <li>
+                  NOT_LOGGED_ON:
+                  Your program issues a database call without being connected to Oracle.
+               </li>
+               <li>
+                  PROGRAM_ERROR:
+                  PL/SQL has an internal problem.
+               </li>
+               <li>
+                  ROWTYPE_MISMATCH:
+                  The host cursor variable and PL/SQL cursor variable involved in an assignment have incompatible return types. For example, when an open host cursor variable is passed to a stored subprogram, the return types of the actual and formal parameters must be compatible.
+               </li>
+               <li>
+                  SELF_IS_NULL:
+                  Your program attempts to call a MEMBER method on a null instance. That is, the built-in parameter SELF (which is always the first parameter passed to a MEMBER method) is null.
+               </li>
+               <li>
+                  STORAGE_ERROR:
+                  PL/SQL runs out of memory or memory has been corrupted.
+               </li>
+               <li>SUBSCRIPT_BEYOND_COUNT:
+                  Your program references a nested table or varray element using an index number larger than the number of elements in the collection.
+               </li>
+               <li>SUBSCRIPT_OUTSIDE_LIMIT:
+                  Your program references a nested table or varray element using an index number (-1 for example) that is outside the legal range.
+               </li>
+               <li>SYS_INVALID_ROWID:
+                  The conversion of a character string into a universal rowid fails because the character string does not represent a valid rowid.
+               </li>
+               <li>TIMEOUT_ON_RESOURCE:
+                  A time-out occurs while Oracle is waiting for a resource.
+               </li>
+           
+               <li>
+                  VALUE_ERROR:
+                  An arithmetic, conversion, truncation, or size-constraint error occurs. For example, when your program selects a column value into a character variable, if the value is longer than the declared length of the variable, PL/SQL aborts the assignment and raises VALUE_ERROR. In procedural statements, VALUE_ERROR is raised if the conversion of a character string into a number fails. (In SQL statements, INVALID_NUMBER is raised.)
+               </li>
+            
+            </ul>
+            <button ></button>
+         </section>
+
+         <section>
+             <h2>
+                 Sintaxa
+             </h2>
+             <p>
+<pre>
+    <code>
+    DECLARE
+    ...
+    BEGIN  
+    ...
+
+    <strong>EXCEPTION</strong>
+
+    <b>WHEN</b> <i>EXCEPTION_TYPE</i> <b>THEN</b>   
+    ...  
+    <b>WHEN</b> <i>EXCEPTION_TYPE</i> <b>THEN</b>   
+    ...  
+    <b>WHEN</b> <i>EXCEPTION_TYPE</i> <b>THEN</b>   
+    ...
+
+    END;
+    </code>
+</pre>
+             </p>
+         </section>
+
+        <section>
+            <h2>Când folosim excepții ?</h2>
+     
+            <h3>Exemplu 1</h3>
+      
+<pre>
+    <code>
+    CREATE OR REPLACE FUNCTION nota_recenta_student 
+    (pi_id IN studenti.id%TYPE) 
+    RETURN VARCHAR2 AS nota_recenta INTEGER;
+                        mesaj VARCHAR2(32767);
+                        counter INTEGER;
+    BEGIN
+
+        SELECT valoare INTO nota_recenta
+        FROM (SELECT valoare FROM note
+                WHERE id_student = pi_id
+                ORDER BY data_notare DESC)
+        WHERE ROWNUM <= 1;
+
+        mesaj := 'Nota recenta este'
+                || nota_recenta || '.';
+
+        RETURN mesaj;
+
+    END nota_recenta_student;
+    </code>
+</pre>
+<br>
+<p>
+    Functia va returna un raspuns asteptat in cazul in care primeste ca parametru un id existent si daca studentul respectiv are macar o nota.
+    Pentru a trata si aceste cazuri vom defini o exceptie pentru a putea returna in final un mesaj mai util:
+</p>
+<br>
+<pre>
+    <code>
+    CREATE OR REPLACE FUNCTION nota_recenta_student 
+    (pi_id IN studenti.id%TYPE) 
+    RETURN VARCHAR2 AS nota_recenta INTEGER;
+                       mesaj VARCHAR2(32767);
+                       counter INTEGER;
+    BEGIN
+
+        SELECT valoare INTO nota_recenta
+        FROM (SELECT valoare FROM note
+              WHERE id_student = pi_id
+              ORDER BY data_notare DESC)
+        WHERE ROWNUM <= 1;
+
+        mesaj := 'Nota recenta este'
+                || nota_recenta || '.';
+
+        RETURN mesaj;
+
+    <strong>EXCEPTION</strong>
+        WHEN <i>NO_DATA_FOUND</i> THEN
+            SELECT COUNT(*) INTO counter
+            FROM studenti
+            WHERE id = pi_id;
+    
+        IF counter = 0 THEN
+            mesaj := 'Studentul cu ID-ul '
+            || pi_id
+            || ' nu exista in baza de date.';
+
+        ELSE
+            SELECT COUNT(*) INTO counter 
+            FROM note
+            WHERE id_student = pi_id;
+    
+            IF counter = 0 THEN
+                mesaj := 'Studentul cu ID-ul '
+                || pi_id
+                || ' nu are nici o nota.';
+            END IF;
+    
+        END IF;
+
+    RETURN mesaj;
+    
+    END nota_recenta_student;
+    </code>
+</pre>
+
+        </section>
+
+        <section>
+            <h3 >Exemplu 2</h3>
+<pre>
+    <code>
+    CREATE OR REPLACE FUNCTION 
+    divide (a INTEGER, b INTEGER) 
+    RETURN INTEGER as res INTEGER;
+
+    BEGIN
+        res := a / b;
+        return res;
+        RETURN result;
+    END divide;
+    </code>
+</pre>
+<br>
+<p>
+    Functia va returna un raspuns corect in cazul in care al doilea parametru e diferit de 0.
+    Pentru a trata si cazul imparțirii la 0 vom defini o exceptie pentru a atenționa o împărțire ilegală.
+</p>
+<br>
+<pre>
+    <code>    
+    CREATE OR REPLACE FUNCTION 
+    divide (a INTEGER, b INTEGER) 
+    RETURN INTEGER as res INTEGER;
+
+    BEGIN
+        res := a / b;
+        return res;
+        RETURN result;
+
+    <strong>EXCEPTION</strong>
+    WHEN <i>ZERO_DIVIDE</i> THEN
+       DBMS_OUTPUT.PUT_LINE
+       ('Eroare: imartirea la zero nu exista');
+    RETURN 0;
+
+    END divide;
+    </code>
+</pre>
+        </section>
+
+        <section>
+            <p>
+                Nu putem însă să prevedem uneori toate tipurile erorile ce pot apărea în execuția unui program. 
+                Pentru a garanta totuși că nu va aparea nici o eroare care să corupă programul putem folosi <strong>OTHERS</strong>
+                drept tip de excepție. Aceasta se pune la final, după definirea excepțiilor cunoscute și prinde orice tip de excepție.               
+            </p>
+        </section>
+
+
+        <section>
+            <h3 >Exemplu 3</h3>
+<pre>
+    <code>    
+    CREATE OR REPLACE FUNCTION 
+    divide (a INTEGER, b INTEGER) 
+    RETURN INTEGER as res INTEGER;
+
+    BEGIN
+        res := a / b;
+        return res;
+        RETURN result;
+
+    EXCEPTION
+    WHEN ZERO_DIVIDE THEN
+       DBMS_OUTPUT.PUT_LINE
+       ('Eroare: imartirea la zero nu exista');
+
+    WHEN <strong>OTHERS</strong> THEN
+    DBMS_OUTPUT.PUT_LINE
+    ('Eroare neasteptata !');
+    
+    RETURN 0;
+
+    END divide;
+    </code>
+</pre>
+        </section>
+
+
+        <section>
+            <h2>Alternative</h2>
+            <p>
+         - Dacă vrem ca două sau mai multe excepții să execute același cod putem să le combinăm pe toate folosind <i>OR</i>.
+            </p>
+            <br>
+<pre>
+    <code>
+    ...
+    EXCEPTION
+    WHEN TYPE_1 <b>OR</b> TYPE_2 <b>OR</b> TYPE_3 THEN
+    ...
+    </code>
+</pre>
+<br>
+<p>
+    - Avem la dispoziție și funcții <i>built-in</i> cum ar fi:
+    <br>
+    <br>
+    <ul>
+        <li>
+            <b>SQLCODE</b> 
+            <br>  - returneaza un cod aferent erorii 
+            <br>- codul este 100+ pentru <i>NO_DATA_FOUND</i> și negativ pentru restul
+            <br>- pentru excepții definite de programator returnează coduri 1+
+        </li>
+        <li>
+            <b>SQLERRM</b>
+            <br> - returneaza mesajul aferent erorii
+            <br> - pentru excepții definite de programator returnează: <i>User-Defined Exception</i>
+        </li>
+    </ul>
+    <br>
+    - Dacă nu a apărut nici un mesaj atunci SQLCODE și SQLERRM returnează: <br>
+    ORA-0000: normal, successful completion.
+    <br>
+    <br>
+    - SQLCODE și SQLERRM nu pot fi folosite într-o instrucțiune SQL, acestea trebuie asignate unor variabile care pot fi ulterior folosite:
+</p>
+<br>
+<pre>
+    <code>
+    DECLARE
+        err_num NUMBER;
+        err_msg VARCHAR2(100);
+    BEGIN
+    ...
+    EXCEPTION
+
+    WHEN OTHERS THEN
+
+        err_num := SQLCODE;
+        err_msg := SUBSTR(SQLERRM, 1, 100);
+        INSERT INTO errors VALUES (err_num, err_msg);
+
+    END;
+    </code>
+</pre>
+
+
+</section>
+
+
+        <section>
+            <h2>De ce folosim excepții ?</h2>
+        <p>
+            <ol>
+               <li>
+                  Pentru a oferi un UX mai bun.
+               </li>
+               <li>
+                  Pentru a trata cazuri astfel încât să nu dea 
+                  crash aplicația, ci să dea o avertizeze/atenționare.
+               </li>
+               <li>
+                  Pentru a eficientiza lucru în echipă în sensul 
+                  tratării excepțiilor pentru codul folosit de un coechipier.
+               </li>
+            </ol>
+        </p>
+         </section>
+
+
+      </main>
+     
+    
+      <div style="margin-bottom: 1rem">© Munteanu Cătălin 2B3</div>
+   </body>
+</html>
